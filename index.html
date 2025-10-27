@@ -1,76 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Matrix Chat</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
+  <script src="./login/login.js"></script>
+  <script src="./sidebar/sidebar.js"></script>
+  <link rel="stylesheet" href="./login/login.css">
+  <link rel="stylesheet" href="./sidebar/sidebar.css">
+
+<style>
+    .chat-container {
+      min-height: 80vh;
+    }
+    .sidebar {
+      min-width: 250px;
+    }
+    .chat-area {
+      flex-grow: 1;
+    }
+    .message-input {
+      min-height: 80px;
+    }
+    .room-list li {
+      padding: 8px;
+      transition: background-color 0.2s;
+    }
+    .room-list li:hover {
+      background-color: #e0e7ff;
+    }
+    .room-list li.active {
+      background-color: #bfdbfe;
+      font-weight: 500;
+    }
+  </style>
+
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="bg-gray-100 flex items-center justify-center p-4">
+   <div x-data="chatApp()" class="chat-container bg-white rounded-lg shadow-lg flex w-full max-w-5xl">
+    <!-- Контейнер для сайдбару--> 
+    <div id="sidebar-container"></div>
 
 
-<div x-data="chatApp()" class="bg-white p-6 rounded shadow-md w-96">
-  <template x-if="!accessToken">
-    <div>
-      <h2 class="text-xl font-bold mb-4">Login</h2>
-      <input x-model="username" placeholder="Username"
-             class="border p-2 w-full mb-2 rounded" />
-      <input x-model="password" type="password" placeholder="Password"
-             class="border p-2 w-full mb-2 rounded" />
-      <button @click="login()" class="bg-blue-500 text-white p-2 w-full rounded">Login</button>
-      <p x-text="error" class="text-red-500 mt-2"></p>
+    <!-- Контейнер для основної області чату -->
+    <div class="chat-area p-4 flex flex-col">
+      <!-- Контейнер для логіну -->
+      <div id="login-container"></div>
+
+
     </div>
-  </template>
-  </template>
- <template x-if="accessToken">
-    <h1>Ви успішно авторизувались. Ваша панель керування</h1>
-   
-  </template>
-<div class="flex flex-col h-[200px]">
-         <!-- User ID -->
-        <div class="mb-2 p-2 bg-gray-200 rounded text-sm break-words">
-            <span class="font-bold">Ваш Matrix ID:</span>
-            <span x-text="userId ? userId : 'Loading...'"></span>
-        </div>
-        <div class="mb-2 p-2 bg-gray-200 rounded text-sm break-words">
-        <span class="font-bold">Резюме</span>
-        <p class="text-sm leading-relaxed">
-         34-12_KP_2_4
-      </div>
-</div>
+  </div>
 
-</div>
+
+
+
 
 <script>
-function chatApp() {
+ function chatApp() {
   return {
     username: '@vladmaloglovets:matrix.org',
     password: '#Vladm911@',
     accessToken: '',
+    userId: '',
+    roomId: '',
+    joinRoomId: '',
+    newRoomName: '',
+    newRoomId: '',
+    rooms: [],
+    messages: [],
+    newMessage: '',
+    inviteUser: '',
     error: '',
-    async login() {
-      try {
-        const res = await fetch('https://matrix.org/_matrix/client/r0/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'm.login.password', user: this.username, password: this.password })
-        });
-        const data = await res.json();
-        if(data.access_token) {
-          this.accessToken = data.access_token;
-          this.userId = data.user_id; 
-         
-        } else {
-          this.error = 'Неправильний логін або пароль';
-        }
-      } catch(e) {
-        this.error = 'Помилка під час входу';
-        console.error(e);
-      }
-    }
+    lastSyncToken: '',
+    login,
+    createRoom,
+    fetchRoomsWithNames,
   }
 }
-
 </script>
+
+<script>
+ // Завантаження HTML-шаблонів після завантаження DOM
+    document.addEventListener('DOMContentLoaded', () => {
+       // Завантаження login.html
+      fetch('./login/login.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('login-container').innerHTML = html;
+        })
+        .catch(error => console.error('Error loading login:', error));
+
+
+      // Завантаження sidebar.html
+      fetch('./sidebar/sidebar.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('sidebar-container').innerHTML = html;
+        })
+        .catch(error => console.error('Error loading sidebar:', error));
+    
+});
+</script>
+<!---END LOAD COMPONENT-->
+
+
 </body>
 </html>
