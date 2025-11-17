@@ -50,3 +50,8 @@
 .sidebar button:hover {
   background-color: #4f46e5;
 }
+
+.sidebar-list {
+    height: 76vh;
+    overflow-y: scroll;
+}

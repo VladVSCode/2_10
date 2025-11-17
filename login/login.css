@@ -31,3 +31,11 @@
   color: #ef4444;
   margin-top: 0.5rem;
 }
+
+#login-container {
+    width: 400px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+}
+
