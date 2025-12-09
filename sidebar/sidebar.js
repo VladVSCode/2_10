@@ -95,4 +95,48 @@ async function createRoom() {
  function getRoomName(roomId) {
       return this.rooms.find(r => r.roomId === roomId)?.name || roomId;
     }
+    async function leaveRoom(roomId) {
+  if (!this.accessToken || !roomId) return;
+
+  if (!confirm(`Ви впевнені, що хочете покинути (видалити) кімнату?`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `https://matrix.org/_matrix/client/r0/rooms/${encodeURIComponent(roomId)}/leave`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Успішно покинуто
+      this.rooms = this.rooms.filter(r => r.roomId !== roomId);
+      
+      // Якщо була вибрана саме ця кімната — скидаємо
+      if (this.roomId === roomId) {
+        this.roomId = '';
+        this.messages = [];
+        this.roomMembers = [];
+      }
+
+      alert('Кімнату покинуто.');
+      await this.fetchRoomsWithNames(); // Оновлюємо список
+    } else {
+      console.error('Leave failed:', data);
+      alert('Не вдалося покинути кімнату: ' + (data.error || 'Невідома помилка'));
+    }
+  } catch (e) {
+    console.error('Leave room error:', e);
+    alert('Помилка: ' + e.message);
+  }
+}
+
+
     
