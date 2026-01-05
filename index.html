@@ -40,6 +40,7 @@
   </style>
 
 </head>
+
 <body class="index-container bg-gray-100 flex justify-center">
   <div x-data="chatApp()" :class="accessToken ? '' : 'items-center'" class="flex w-full">
     <!-- Контейнер для сайдбару--> 
@@ -92,6 +93,8 @@
     fetchRoomsWithNames: fetchRoomsWithNames,
     fetchRoomMembers: fetchRoomMembers,
     leaveRoom: leaveRoom,
+    showDesktopNotification: showDesktopNotification, 
+    playNotificationSound: playNotificationSound
   }
 }
 </script>
@@ -128,6 +131,17 @@
 </script>
 <!---END LOAD COMPONENT-->
 
+<!-- index.html — додайте перед </body> -->
+<script>
+  // Запитуємо дозвіл при першому вході
+  document.addEventListener('DOMContentLoaded', () => {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  });
+</script>
+
+<script> document.addEventListener('DOMContentLoaded', () => { if (Notification.permission === 'default') { Notification.requestPermission(); } }); </script>
 
 </body>
 </html>
