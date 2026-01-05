@@ -67,3 +67,87 @@ async function fetchMessages() {
         console.error('Fetch messages error:', e);
       }
     }
+
+function startEdit(messageId, currentBody) {
+  this.editMode = messageId;
+  this.editText = currentBody;
+  this.$nextTick(() => {
+    const textarea = document.querySelector(`[x-show="editMode === '${messageId}'"] textarea`);
+    if (textarea) textarea.focus();
+  });
+}
+
+
+function cancelEdit() {
+  this.editMode = null;
+  this.editText = '';
+}
+
+
+async function saveEdit(messageId) {
+  if (!this.editText.trim()) return;
+
+  try {
+    const res = await fetch(
+      `https://matrix.org/_matrix/client/r0/rooms/${this.roomId}/send/m.room.message`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        body: JSON.stringify({
+          msgtype: 'm.text',
+          body: this.editText.trim(),
+          "m.new_content": true,
+          "m.relates_to": {
+            rel_type: "m.replace",
+            event_id: messageId
+          }
+        })
+      }
+    );
+
+    const data = await res.json();
+    if (data.event_id) {
+      // Оновлюємо локально
+      const msg = this.messages.find(m => m.id === messageId);
+      if (msg) {
+        msg.body = this.editText.trim();
+        msg.edited = true;
+      }
+      this.cancelEdit();
+    } else {
+      alert('Помилка редагування: ' + (data.error || ''));
+    }
+  } catch (e) {
+    console.error('Edit error:', e);
+    alert('Помилка: ' + e.message);
+  }
+}
+
+async function deleteMessage(messageId) {
+  if (!confirm('Видалити повідомлення?')) return;
+
+  try {
+    const res = await fetch(
+      `https://matrix.org/_matrix/client/r0/rooms/${this.roomId}/redact/${messageId}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      }
+    );
+
+    if (res.ok) {
+      this.messages = this.messages.filter(m => m.id !== messageId);
+    } else {
+      const data = await res.json();
+      alert('Не вдалося видалити: ' + (data.error || ''));
+    }
+  } catch (e) {
+    console.error('Delete error:', e);
+    alert('Помилка: ' + e.message);
+  }
+}
